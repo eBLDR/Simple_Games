@@ -20,6 +20,7 @@ def show_board(board):
     """
     Displays board.
     """
+    print('=' * 30 + '\n')
     print('   ', end='')
     for i in range(len(board)):
         print(i + 1, end=' ')
@@ -30,7 +31,7 @@ def show_board(board):
             print(value, end=' ')
         print()
 
-            
+
 def ship_position(board):
     """
     Returns a random position (x, y).
@@ -60,8 +61,6 @@ def user_coordinates(board):
                 print("Out of range.")
         else:
             print("Must be integer.")
-
-    print()
     return tuple(coord)
 
 
@@ -69,7 +68,7 @@ def game(board):
     """
     Main loop.
     """
-    print("- BATTLESHIP -\n")
+    print("- BATTLESHIP, by BLDR -\n")
     missile = len(board) + 2
     enemy_ship = ship_position(board)
     show_board(board)
@@ -78,24 +77,20 @@ def game(board):
         if target == enemy_ship:
             board[enemy_ship[0]][enemy_ship[1]] = "#"
             show_board(board)
-            print("\nEnemy ship destroyed!\n\n- VICTORY! -")
+            print("\nEnemy ship was destroyed!\n\n- VICTORY! -")
             break
-
         elif target != enemy_ship:
             if board[target[0]][target[1]] == "O":
                 board[target[0]][target[1]] = "X"
-                show_board(board)
                 missile -= 1
                 print('\nWater! Remaining missile/s {}'.format(missile))
+                show_board(board)
             else:
                 print("Coordinates already attacked...")
-
     else:
-        print("\nNo missiles left, enemy ship still sailing...\n\n- DEFEAT! -")
+        print("\nNo missiles left, enemy ship is still sailing...\n\n- DEFEAT! -")
 
-    
+
 M = 4  # size of the board
-
 BOARD = generate_board(M)
-
 game(BOARD)

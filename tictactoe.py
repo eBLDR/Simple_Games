@@ -1,4 +1,5 @@
-# Simple Tic Tac Toe version, by BLDR.
+#! /usr/bin/python
+# Simple Tic Tac Toe version, by BLDR
 
 import random
 import os

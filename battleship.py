@@ -1,4 +1,5 @@
-# Simple Battleship version, by BLDR.
+#! /usr/bin/python
+# Simple Battleship version, by BLDR
 
 import random
 

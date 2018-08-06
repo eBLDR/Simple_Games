@@ -1,4 +1,5 @@
 #! /usr/bin/python
+# Simple hangman version, by BLDR
 
 import os
 import sys

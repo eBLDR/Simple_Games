@@ -1,3 +1,4 @@
+#! /usr/bin/python
 # Simple BlackJack version, by BLDR
 import os
 import random

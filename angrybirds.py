@@ -1,9 +1,11 @@
+# !!! Needs revision - 2018
+
 import turtle
 import random
 import math as m
 import time
 
-# constants and initial parameters
+# Constants and initial parameters
 ANGLE = 0
 POWER = 0
 valorsX = []
@@ -81,7 +83,7 @@ def less_power():
 def intents():
     global I
     msg.clear()
-    msg.pencolor("white")
+    msg.pencolor('white')
     msg.goto(-280, 120)
     msg.write(str(I), align='left', font=('Arial', 24, 'normal'))
 
@@ -89,10 +91,10 @@ def intents():
 def victory():
     msg.pencolor('red')
     msg.goto(-100, -280)
-    msg.write("VICTORIA", align='left', font=('Arial', 32, 'normal'))
+    msg.write('VICTORY', align='left', font=('Arial', 32, 'normal'))
     msg.goto(-100, -300)
     msg.pencolor('white')
-    msg.write("Nova partida en 5, 4, 3...", align='left', font=('Arial', 12))
+    msg.write('New game in 5, 4, 3...', align='left', font=('Arial', 12))
     time.sleep(5)
 
 
@@ -100,7 +102,7 @@ def x(t):
     global ANGLE, POWER, G
     ANGLE_PI = ANGLE * (m.pi/180)
     Px = float(m.cos(ANGLE_PI)*POWER*10)
-    x = -250 + (Px*t)    
+    x = -250 + (Px*t)
     return x
 
 
@@ -113,8 +115,7 @@ def y(t):
 
 
 """
-Funció que NO usa el temps per generar les llistes de posició X,Y.
-Per simplicitat matemàtica, he preferit usar les anteriors.
+Not using time to generate positions.
 def f(x):
     global ANGLE,POWER,G
     ANGLE_PI = ANGLE * (m.pi/180)
@@ -127,9 +128,8 @@ def f(x):
 
 def fire():
     global SP_obj, A, B, I
-    screen.onkey(res, "Return")  # reassigno algunes tecles provisionalment perque no resultin operatives si
-    # s'apreten durant l'execució del llançament
-    screen.onkey(res, "space")
+    screen.onkey(nothing, 'Return')  # To avoid crashing the game while animation
+    screen.onkey(nothing, 'space')
     valorsT = []
     maxim = 30
     minim = 0
@@ -165,32 +165,32 @@ def fire():
     intents()
     if I == 0:
         new_pos()
-    screen.onkey(fire, "Return")
-    screen.onkey(new_pos, "space")
+    screen.onkey(fire, 'Return')
+    screen.onkey(new_pos, 'space')
 
 
-def res():
+def nothing():
     pass
 
 
 # setting window
 screen = turtle.Screen()
-screen.bgcolor("black")
+screen.bgcolor("black')
 screen.setup(650, 650)
-screen.title("Custom Angry Birds")
+screen.title('Custom Angry Birds')
 
 # missile object
 atlas = turtle.Turtle()
-atlas.color("green")
-atlas.pensize("2")
-atlas.pencolor("white")
-atlas.shape("classic")
+atlas.color('green')
+atlas.pensize('2')
+atlas.pencolor('white')
+atlas.shape('classic')
 atlas.shapesize(1.5, SP)
 
 # target objects
 obj = turtle.Turtle()
-obj.color("red")
-obj.shape("turtle")
+obj.color('red')
+obj.shape('turtle')
 obj.penup()
 
 # help display
@@ -198,9 +198,9 @@ legend = turtle.Turtle()
 legend.hideturtle()
 legend.penup()
 legend.goto(-315, 240)
-legend.pencolor("white")
-legend.write("Intro => Fire!\nLeft/Right => Direction\nUp/Down => Power\nSpace => "
-             "New Position\nEsc => Exit", align="left")
+legend.pencolor('white')
+legend.write('Intro => Fire!\nLeft/Right => Direction\nUp/Down => Power\nSpace => '
+             'New Position\nEsc => Exit', align='left')
 
 # messages
 msg = turtle.Turtle()
@@ -212,13 +212,13 @@ start_pos()
 new_pos()
 
 # setting keys
-screen.onkey(new_pos, "space")
-screen.onkey(exit_, "Escape")
-screen.onkey(fire, "Return")
-screen.onkey(left, "Left")
-screen.onkey(right, "Right")
-screen.onkey(more_power, "Up")
-screen.onkey(less_power, "Down")
+screen.onkey(new_pos, 'space')
+screen.onkey(exit_, 'Escape')
+screen.onkey(fire, 'Return')
+screen.onkey(left, 'Left')
+screen.onkey(right, 'Right')
+screen.onkey(more_power, 'Up')
+screen.onkey(less_power, 'Down')
 
 
 # mainloop

@@ -4,7 +4,7 @@ import os
 import random
 import sys
 
-from . import utils
+import utils
 
 
 class Game:

@@ -1,8 +1,11 @@
 # REACTION GAME
+import os
 import random
 from time import sleep, perf_counter as my_timer
 
 wait_time = random.randint(1, 5)
+
+os.system('clear')
 input('REACTION GAME!\n<enter> when you are ready... ')
 
 sleep(wait_time)

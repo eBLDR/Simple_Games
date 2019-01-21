@@ -9,7 +9,7 @@ class DataManager:
     def read_data(self, size=9):
         with open(self.filename, 'r') as csv_file:
             reader = csv.reader(csv_file)
-            self.data = [row for row in reader]
+            self.data = [[number if number != '0' else '' for number in row] for row in reader]
         self.validate_data(size)
         return self.data
 

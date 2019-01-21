@@ -1,0 +1,2 @@
+class ImpossibleToSolveError(Exception):
+    pass

@@ -85,12 +85,19 @@ class Solver:
                 self.pencil_marks[(row_index, column_index)] = possible_matches
 
     def _update_board(self, new_number, row_index, column_index, method):
+        """
+        Places the new number into the existing board.
+        """
         self.board.board[row_index][column_index] = new_number
         self.display_info(new_number, row_index, column_index, method)
 
     def _update_pencil_marks(self, new_number, row_index, column_index):
+        """
+        Updates the pencil marks candidates based on the new number placed.
+        """
+
         def remove_candidates(key, number, pencil_marks):
-            if key in self.pencil_marks.keys() and number in pencil_marks[key]:
+            if key in pencil_marks.keys() and number in pencil_marks[key]:
                 pencil_marks[key].remove(number)
 
         # Block update
@@ -108,6 +115,13 @@ class Solver:
         del self.pencil_marks[(row_index, column_index)]
 
     def update(self, new_number, row_index, column_index, method):
+        """
+        Updates the board and the pencil marks.
+        :param new_number: number
+        :param row_index: row
+        :param column_index: column
+        :param method: technique used to place the number
+        """
         self._update_board(new_number, row_index, column_index, method)
         self._update_pencil_marks(new_number, row_index, column_index)
 
@@ -119,6 +133,8 @@ class Solver:
         if self.lone_singles():
             return
         if self.hidden_singles():
+            return
+        if self.naked_pairs():
             return
         raise ImpossibleToSolveError
 
@@ -174,3 +190,47 @@ class Solver:
                 return True
 
         return False
+
+    def naked_pairs(self):
+        """
+        Clears pencil marks based on equivalent candidates in two cells.
+        """
+
+        def find_match(pencil_marks, house_pencil_marks):
+            match_ = False
+            for indexes_1, candidates_1 in house_pencil_marks.items():
+                if len(candidates_1) == 2:
+                    for indexes_2, candidates_2 in house_pencil_marks.items():
+                        if len(candidates_2) == 2 and indexes_1 != indexes_2 and candidates_1 == candidates_2:
+
+                            for index in house_pencil_marks.keys():
+                                if index != indexes_1 and index != indexes_2:
+                                    for candidate in candidates_1:
+                                        if candidate in pencil_marks[index]:
+                                            pencil_marks[index].remove(candidate)
+                                            match_ = True
+
+            return match_
+
+        match = False
+
+        # Naked pairs in block
+        for row_index in range(0, self.board.size, self.board.dimension):
+            for column_index in range(0, self.board.size, self.board.dimension):
+                if find_match(self.pencil_marks, self.get_block_pencil_marks(row_index, column_index)):
+                    match = True
+                    print('Naked pair found in block.')
+
+        # Naked pairs in row
+        for row_index in range(self.board.size):
+            if find_match(self.pencil_marks, self.get_row_pencil_marks(row_index)):
+                match = True
+                print('Naked pair found in row.')
+
+        # Naked pairs in column
+        for column_index in range(self.board.size):
+            if find_match(self.pencil_marks, self.get_row_pencil_marks(column_index)):
+                match = True
+                print('Naked pair found in column.')
+
+        return match

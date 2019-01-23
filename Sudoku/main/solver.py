@@ -8,6 +8,8 @@ class Solver:
         :param board: Board instance with data.
         """
         self.board = board
+        self.pencil_marks = {}
+        self.initialise_pencil_marks()
 
     def is_solved(self):
         return all([all(row) for row in self.board.board])
@@ -25,43 +27,37 @@ class Solver:
     def get_column_indexes(self, column_index):
         return [(row_index, column_index) for row_index in range(self.board.size)]
 
-    def get_square_indexes(self, row_index, column_index):
+    def get_block_indexes(self, row_index, column_index):
         row_start_index = (row_index // self.board.dimension) * self.board.dimension
         row_range = range(row_start_index, row_start_index + self.board.dimension)
         column_start_index = (column_index // self.board.dimension) * self.board.dimension
         column_range = range(column_start_index, column_start_index + self.board.dimension)
         return [(row_index, column_index) for row_index in row_range for column_index in column_range]
 
-    def get_values(self, indexes):
+    def _get_values(self, indexes):
         return [self.board.board[row][column] for row, column in indexes]
 
     def get_row_values(self, row_index):
-        return self.get_values(self.get_row_indexes(row_index))
+        return self._get_values(self.get_row_indexes(row_index))
 
     def get_column_values(self, column_index):
-        return self.get_values(self.get_column_indexes(column_index))
+        return self._get_values(self.get_column_indexes(column_index))
 
-    def get_square_values(self, row_index, column_index):
-        return self.get_values(self.get_square_indexes(row_index, column_index))
+    def get_block_values(self, row_index, column_index):
+        return self._get_values(self.get_block_indexes(row_index, column_index))
 
-    def update_board(self, new_number, row_index, column_index, method):
-        self.board.board[row_index][column_index] = new_number
-        self.display_info(new_number, row_index, column_index, method)
+    def get_row_pencil_marks(self, row_index):
+        return {key: self.pencil_marks[key] for key in self.get_row_indexes(row_index) if key in self.pencil_marks.keys()}
 
-    def place_next(self):
+    def get_column_pencil_marks(self, column_index):
+        return {key: self.pencil_marks[key] for key in self.get_column_indexes(column_index) if key in self.pencil_marks.keys()}
+
+    def get_block_pencil_marks(self, row_index, column_index):
+        return {key: self.pencil_marks[key] for key in self.get_block_indexes(row_index, column_index) if key in self.pencil_marks.keys()}
+
+    def initialise_pencil_marks(self):
         """
-        Main logic of techniques usage.
-        :return: True if successful match False otherwise.
-        """
-        if self.place_by_number_elimination():
-            return
-        if self.place_by_single_position():
-            return
-        raise ImpossibleToSolveError
-
-    def place_by_number_elimination(self):
-        """
-        Tries to place a number based on number elimination, checking rows, columns and squares.
+        Populates pencil marks dictionary with possible matches by position.
         """
 
         def remove_matches(list_):
@@ -72,10 +68,13 @@ class Solver:
         for row_index in range(self.board.size):
             for column_index in range(self.board.size):
                 if self.board.board[row_index][column_index]:
-                    # Skip if there is already a number
+                    # Skip if there is already a number in that cell
                     continue
 
                 possible_matches = self.get_possible_numbers()
+
+                # Block check
+                remove_matches(self.get_block_values(row_index, column_index))
 
                 # Row check
                 remove_matches(self.get_row_values(row_index))
@@ -83,65 +82,95 @@ class Solver:
                 # Column check
                 remove_matches(self.get_column_values(column_index))
 
-                # Square check
-                remove_matches(self.get_square_values(row_index, column_index))
+                self.pencil_marks[(row_index, column_index)] = possible_matches
 
-                # Place number if there is only one match left
-                if len(possible_matches) == 1:
-                    self.update_board(possible_matches[0], row_index, column_index, 'number elimination')
-                    return True
+    def _update_board(self, new_number, row_index, column_index, method):
+        self.board.board[row_index][column_index] = new_number
+        self.display_info(new_number, row_index, column_index, method)
+
+    def _update_pencil_marks(self, new_number, row_index, column_index):
+        def remove_candidates(key, number, pencil_marks):
+            if key in self.pencil_marks.keys() and number in pencil_marks[key]:
+                pencil_marks[key].remove(number)
+
+        # Block update
+        for index in self.get_block_indexes(row_index, column_index):
+            remove_candidates(index, new_number, self.pencil_marks)
+
+        # Row update
+        for index in self.get_row_indexes(row_index):
+            remove_candidates(index, new_number, self.pencil_marks)
+
+        # Column update
+        for index in self.get_column_indexes(column_index):
+            remove_candidates(index, new_number, self.pencil_marks)
+
+        del self.pencil_marks[(row_index, column_index)]
+
+    def update(self, new_number, row_index, column_index, method):
+        self._update_board(new_number, row_index, column_index, method)
+        self._update_pencil_marks(new_number, row_index, column_index)
+
+    def place_next(self):
+        """
+        Main logic of techniques usage.
+        :return: True if successful placing False otherwise.
+        """
+        if self.lone_singles():
+            return
+        if self.hidden_singles():
+            return
+        raise ImpossibleToSolveError
+
+    def lone_singles(self):
+        """
+        Searches for a lone single, a sole candidate in a cell.
+        """
+        for indexes, possible_matches in self.pencil_marks.items():
+            if len(possible_matches) == 1:
+                self.update(possible_matches[0], indexes[0], indexes[1], 'lone single')
+                return True
 
         return False
 
-    def place_by_single_position(self):
+    def hidden_singles(self):
         """
-        Tries to place a number based on single position possible.
+        Searches for a hidden single, a unique possible position left in a given house.
         """
-        for number in self.get_possible_numbers():
-            # Single position in square
-            for row_index in range(0, self.board.size, self.board.dimension):
-                for column_index in range(0, self.board.size, self.board.dimension):
-                    if number in self.get_square_values(row_index, column_index):
-                        # Skip if the number is already in that square
-                        continue
-                    possible_coordinates = [indexes for indexes in self.get_square_indexes(row_index, column_index) if not self.board.board[indexes[0]][indexes[1]]]
-                    for row, column in possible_coordinates.copy():
-                        if number in self.get_row_values(row) or number in self.get_column_values(column):
-                            possible_coordinates.remove((row, column))
 
-                    if len(possible_coordinates) == 1:
-                        new_row_index, new_column_index = possible_coordinates[0]
-                        self.update_board(number, new_row_index, new_column_index, 'single position in square')
-                        return True
+        def find_match(house_pencil_marks):
+            for candidate_number in self.get_possible_numbers():
+                matches = 0
+                candidate_position = None
+                for indexes, candidates in house_pencil_marks.items():
+                    if candidate_number in candidates:
+                        matches += 1
+                        if not candidate_position:
+                            candidate_position = indexes
+                if matches == 1:
+                    return candidate_number, candidate_position
+            return None, None
 
-            # Single position in row
-            for row_index in range(self.board.size):
-                if number in self.get_row_values(row_index):
-                    # Skip if the number is already in that row
-                    continue
-                possible_coordinates = [indexes for indexes in self.get_row_indexes(row_index) if not self.board.board[indexes[0]][indexes[1]]]
-                for row, column in possible_coordinates.copy():
-                    if number in self.get_column_values(column):
-                        possible_coordinates.remove((row, column))
-
-                if len(possible_coordinates) == 1:
-                    new_row_index, new_column_index = possible_coordinates[0]
-                    self.update_board(number, new_row_index, new_column_index, 'single position in row')
+        # Hidden singles in block
+        for row_index in range(0, self.board.size, self.board.dimension):
+            for column_index in range(0, self.board.size, self.board.dimension):
+                number, position = find_match(self.get_block_pencil_marks(row_index, column_index))
+                if number and position:
+                    self.update(number, position[0], position[1], 'hidden single in block')
                     return True
 
-            # Single position in column
-            for column_index in range(self.board.size):
-                if number in self.get_column_values(column_index):
-                    # Skip if the number is already in that column
-                    continue
-                possible_coordinates = [indexes for indexes in self.get_column_indexes(column_index) if not self.board.board[indexes[0]][indexes[1]]]
-                for row, column in possible_coordinates.copy():
-                    if number in self.get_row_values(row):
-                        possible_coordinates.remove((row, column))
+        # Hidden singles in row
+        for row_index in range(self.board.size):
+            number, position = find_match(self.get_row_pencil_marks(row_index))
+            if number and position:
+                self.update(number, position[0], position[1], 'hidden single in row')
+                return True
 
-                if len(possible_coordinates) == 1:
-                    new_row_index, new_column_index = possible_coordinates[0]
-                    self.update_board(number, new_row_index, new_column_index, 'single position in column')
-                    return True
+        # Hidden singles in column
+        for column_index in range(self.board.size):
+            number, position = find_match(self.get_row_pencil_marks(column_index))
+            if number and position:
+                self.update(number, position[0], position[1], 'hidden single in column')
+                return True
 
         return False

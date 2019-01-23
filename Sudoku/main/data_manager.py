@@ -14,6 +14,5 @@ class DataManager:
         return self.data
 
     def validate_data(self, size):
-        assert isinstance(self.data, (list, tuple)) is True, 'Wrong data format, must be list or tuple.'
-        assert len(self.data[0]) != 0, 'Data is empty.'
-        assert len(self.data) == len(self.data[0]) == size, 'Incomplete data.'
+        assert len(self.data) != 0, 'Data is empty.'
+        assert {len(self.data)} == set([len(row) for row in self.data]) == {size}, 'Incomplete data.'

@@ -1,6 +1,6 @@
 class Board:
     def __init__(self, size=9, data=None):
-        assert size ** (1 / 2) // 1 == size ** (1 / 2) / 1, 'Invalid size - must be the square of a natural number.'
+        assert size ** (1 / 2) // 1 == size ** (1 / 2) / 1, 'Invalid size - must be the block of a natural number.'
 
         self.size = size
         self.dimension = round(self.size ** (1 / 2))

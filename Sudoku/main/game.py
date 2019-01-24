@@ -16,15 +16,16 @@ class Game:
         if self.solve:
             # Solve existing SuDoKu
             self.board.display()
+            input('\n<enter> to solve...\n')
             self.solve_board()
+            self.board.display()
         else:
             # Generate random SuDoKu
             raise NotImplementedError
-        self.board.display()
 
     def solve_board(self):
         try:
             while not self.solver.is_solved():
                 self.solver.place_next()
         except ImpossibleToSolveError:
-            print('This SuDoKu is impossible to solve with any of the implemented techniques.')
+            print('\nThis SuDoKu is impossible to solve with any of the implemented techniques.')

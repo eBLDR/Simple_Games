@@ -136,6 +136,8 @@ class Solver:
             return
         if self.naked_pairs():
             return
+        if self.omission():
+            return
         raise ImpossibleToSolveError
 
     def lone_singles(self):
@@ -196,7 +198,7 @@ class Solver:
         Clears pencil marks based on equivalent candidates in two cells.
         """
 
-        def find_match(pencil_marks, house_pencil_marks):
+        def find_match(house_pencil_marks):
             match_ = False
             for indexes_1, candidates_1 in house_pencil_marks.items():
                 if len(candidates_1) == 2:
@@ -206,8 +208,8 @@ class Solver:
                             for index in house_pencil_marks.keys():
                                 if index != indexes_1 and index != indexes_2:
                                     for candidate in candidates_1:
-                                        if candidate in pencil_marks[index]:
-                                            pencil_marks[index].remove(candidate)
+                                        if candidate in self.pencil_marks[index]:
+                                            self.pencil_marks[index].remove(candidate)
                                             match_ = True
 
             return match_
@@ -217,20 +219,66 @@ class Solver:
         # Naked pairs in block
         for row_index in range(0, self.board.size, self.board.dimension):
             for column_index in range(0, self.board.size, self.board.dimension):
-                if find_match(self.pencil_marks, self.get_block_pencil_marks(row_index, column_index)):
+                if find_match(self.get_block_pencil_marks(row_index, column_index)):
                     match = True
                     print('Naked pair found in block.')
 
         # Naked pairs in row
         for row_index in range(self.board.size):
-            if find_match(self.pencil_marks, self.get_row_pencil_marks(row_index)):
+            if find_match(self.get_row_pencil_marks(row_index)):
                 match = True
                 print('Naked pair found in row.')
 
         # Naked pairs in column
         for column_index in range(self.board.size):
-            if find_match(self.pencil_marks, self.get_row_pencil_marks(column_index)):
+            if find_match(self.get_row_pencil_marks(column_index)):
                 match = True
                 print('Naked pair found in column.')
+
+        return match
+
+    def omission(self):
+        """
+        Clears pencil marks by omission.
+        """
+
+        def find_match(house_pencil_marks_1, house_pencil_marks_2):
+            for number in self.get_possible_numbers():
+                possible_match = False
+                match_ = False
+                for indexes, candidates in house_pencil_marks_1.items():
+                    if number in candidates and indexes in house_pencil_marks_2.keys():
+                        possible_match = True
+                    elif number in candidates and indexes not in house_pencil_marks_2.keys():
+                        possible_match = False
+                        break
+
+                if possible_match:
+                    for indexes, candidates in house_pencil_marks_2.items():
+                        if number in candidates and indexes not in house_pencil_marks_1.keys():
+                            self.pencil_marks[indexes].remove(number)
+                            match_ = True
+
+                return match_
+
+        match = False
+
+        # Row-block match
+        for row_index in range(self.board.size):
+            row_pencil_marks = self.get_row_pencil_marks(row_index)
+            for column_index in range(0, self.board.size, self.board.dimension):
+                block_pencil_marks = self.get_block_pencil_marks(row_index, column_index)
+                if find_match(row_pencil_marks, block_pencil_marks) or find_match(block_pencil_marks, row_pencil_marks):
+                    match = True
+                    print('Omission found in row-block.')
+
+        # Column-block match
+        for column_index in range(self.board.size):
+            column_pencil_marks = self.get_column_pencil_marks(column_index)
+            for row_index in range(0, self.board.size, self.board.dimension):
+                block_pencil_marks = self.get_block_pencil_marks(column_index, row_index)
+                if find_match(column_pencil_marks, block_pencil_marks) or find_match(block_pencil_marks, column_pencil_marks):
+                    match = True
+                    print('Omission found in column-block.')
 
         return match

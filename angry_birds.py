@@ -175,7 +175,7 @@ def nothing():
 
 # setting window
 screen = turtle.Screen()
-screen.bgcolor("black')
+screen.bgcolor('black')
 screen.setup(650, 650)
 screen.title('Custom Angry Birds')
 

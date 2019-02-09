@@ -9,17 +9,20 @@ class Player(Being):
     def __init__(self, name):
         super().__init__(name=name)
         self.enemies_killed = 0
-        self.init_bonus_points = 10
+        self.skill_points_to_use = 10
 
         # Objects
         self.inventory = []
 
-        self.distribute_init_bonus_points()
+        self.distribute_init_skill_points()
 
-    def distribute_init_bonus_points(self):
-        while self.init_bonus_points > 0:
+    def distribute_init_skill_points(self):
+        while self.skill_points_to_use > 0:
             self.upgrade_stat()
-            self.init_bonus_points -= 1
+            self.skill_points_to_use -= 1
+
+    def level_up(self):
+        self.skill_points_to_use += 1
 
     def upgrade_stat(self):
         os.system('clear')
@@ -31,8 +34,10 @@ class Player(Being):
                 self._upgrade_stat(stat)
                 break
 
-    def level_up(self):
-        self.upgrade_stat()
-
     def escape(self, chaser):
         return self.agility >= chaser.agility
+
+    def has_killed(self, enemy):
+        exp = enemy.give_experience()
+        self.experience += exp
+        return exp

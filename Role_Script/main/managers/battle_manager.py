@@ -28,15 +28,16 @@ class Battle:
                 prompt = '{} has dealt {} damage.'.format(self.player.name, damage)
                 self.display_ui(info=prompt)
 
-                if self.enemy.health <= 0:
-                    prompt = '{} is dead!'.format(self.enemy.name)
+                if not self.enemy.is_alive():
+                    exp = self.player.has_killed(self.enemy)
+                    prompt = '{} is dead! You have gained {}xp.'.format(self.enemy.name, exp)
                     in_battle = False
                 else:
                     damage = self.enemy.attack(self.player)
                     prompt = '{} has dealt {} damage.'.format(self.enemy.name, damage)
                 self.display_ui(info=prompt)
 
-                if self.player.health <= 0:
+                if not self.player.is_alive():
                     prompt = 'You died!!!'
                     in_battle = False
                     self.display_ui(info=prompt)
@@ -51,13 +52,10 @@ class Battle:
                 self.display_ui(info=prompt)
 
     def generate_enemy(self):
-        self.enemy = copy.deepcopy(Being(name=random.choice(list(displays_beings.keys())), experience=self.player.experience // 10))
+        self.enemy = copy.deepcopy(Being(name=random.choice(list(displays_beings.keys())), experience=self.player.experience // 4))
 
     def display_ui(self, user_options=None, info=None):
         battle_ui.display_battle_ui(self.player, self.enemy, user_options=user_options, info=info)
-
-    def still_alive(self):
-        return self.player.health > 0 and self.enemy.health > 0
 
     def get_player_action(self):
         while True:

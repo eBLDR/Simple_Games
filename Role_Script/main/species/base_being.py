@@ -9,18 +9,15 @@ class Being:
         self.name = name.title() if self.display else name
 
         # Base stats
-        self.all_stats = ['experience', 'level', 'max_health', 'max_energy', 'health', 'energy', 'strength', 'agility', 'technique']
+        self.all_stats = ['level', 'experience', 'max_health', 'max_energy', 'health', 'energy', 'strength', 'agility', 'technique']
         self.stats_to_upgrade = ['health', 'energy', 'strength', 'agility', 'technique']
-        self.experience = experience
-        self.level = self.calculate_level()
+        self.level = 1
+        self._experience = 0
         self._health = {'max': 100, 'current': 100}
         self._energy = {'max': 50, 'current': 50}
         self.strength = 10
         self.agility = 10
         self.technique = 10
-
-        if self.experience:
-            self.generate_random_stats()
 
         # Equipment
         self.equipment = ['body', 'head', 'feet', 'hand_1', 'hand_2']
@@ -29,6 +26,9 @@ class Being:
         self.feet = None
         self.hand_1 = None
         self.hand_2 = None
+
+        if experience:
+            self.experience = experience
 
     def stats_to_dict(self):
         return self._attr_to_dict(self.all_stats)
@@ -41,6 +41,19 @@ class Being:
         for key in list_:
             tmp_[key] = getattr(self, key)
         return tmp_
+
+    def _get_experience(self):
+        return self._experience
+
+    def _set_experience(self, experience):
+        self._experience = experience
+        delta = self.calculate_level() - self.level
+        if delta > 0:
+            self.level += delta
+            for i in range(delta):
+                self.level_up()
+
+    experience = property(_get_experience, _set_experience)
 
     def _get_max_health(self):
         return self._health.get('max')
@@ -74,9 +87,6 @@ class Being:
 
     energy = property(_get_current_energy, _set_current_energy)
 
-    def calculate_level(self):
-        return 1 + self.experience // 100
-
     def _upgrade_stat(self, stat):
         if stat in ['health', 'energy']:
             stat = 'max_{}'.format(stat)
@@ -101,9 +111,17 @@ class Being:
     def _upgrade_technique(self):
         self.technique += 2
 
-    def generate_random_stats(self):
-        for bonus in range(1, self.level):
-            self._upgrade_stat(random.choice(self.stats_to_upgrade))
+    def is_alive(self):
+        return self.health > 0
+
+    def calculate_level(self):
+        return 1 + self.experience // 100
+
+    def level_up(self):
+        self.generate_random_stat()
+
+    def generate_random_stat(self):
+        self._upgrade_stat(random.choice(self.stats_to_upgrade))
 
     def attack(self, defender):
         damage = self.strength + self.calculate_bonus_damage()
@@ -114,4 +132,4 @@ class Being:
         return int(random.randint(0, self.strength // 3) * self.technique / 10)
 
     def give_experience(self):
-        return self.experience // 10 if self.experience // 10 > 10 else 10
+        return self.experience // 4 if self.experience // 4 > 20 else random.randint(15, 20)

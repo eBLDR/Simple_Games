@@ -29,3 +29,5 @@ class Game:
                 self.solver.place_next()
         except ImpossibleToSolveError:
             print('\nThis SuDoKu is impossible to solve with any of the implemented techniques.')
+            print('\nPencil marks:\n')
+            self.solver.display_pencil_marks()

@@ -84,6 +84,11 @@ class Solver:
 
                 self.pencil_marks[(row_index, column_index)] = possible_matches
 
+    def display_pencil_marks(self):
+        for index in sorted(self.pencil_marks.keys()):
+            if len(self.pencil_marks[index]) == 3:
+                print('{}: {}'.format(index, ', '.join(self.pencil_marks[index])))
+
     def _update_board(self, new_number, row_index, column_index, method):
         """
         Places the new number into the existing board.

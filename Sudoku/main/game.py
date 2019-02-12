@@ -5,7 +5,8 @@ from main.solver import Solver
 
 
 class Game:
-    def __init__(self, solve=False):
+    def __init__(self, generate=False, solve=False):
+        self.generate = generate
         self.solve = solve
         self.data_manager = DataManager() if solve else None
         self.data = self.data_manager.read_data() if self.data_manager else None
@@ -19,9 +20,9 @@ class Game:
             input('\n<enter> to solve...\n')
             self.solve_board()
             self.board.display()
-        else:
+        elif self.generate:
             # Generate random SuDoKu
-            raise NotImplementedError
+            raise NotImplementedError('SuDoKu generator is not implemented yed.')
 
     def solve_board(self):
         try:

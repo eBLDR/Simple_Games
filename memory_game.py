@@ -51,7 +51,7 @@ class Game:
         self.set_char_set()
     
     def run(self):
-        os.system('clear')
+        system('clear')
         print('- MEMORY GAME -\n')
         self.init_params()
         print('\n{}, game will start in\n'.format(self.username))

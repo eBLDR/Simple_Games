@@ -37,7 +37,7 @@ class Game:
 
             self.remaining_guesses -= 1
         else:
-            print('\n- No more guesses... -\n\n<enter>')
+            input('\n- No more guesses... -\n\n<enter>')
 
 
 if __name__ == '__main__':

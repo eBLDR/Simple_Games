@@ -107,17 +107,18 @@ class Squad:
         else:
             return 6 + int((self.units - 6) / 2)
 
-    """def set_front(self):
+    """
+    def set_front(self):
         front = 5
         if front > self.units:
             front = self.units
         return front
     
-    #def show_move_range(self): ?
+    # def show_move_range(self): ?
 
-    #def show_attack_range(self): ?
+    # def show_attack_range(self): ?
 
-    #def change_front(self):
+    # def change_front(self):
 
-    #def getting_away():
+    # def getting_away():
     """

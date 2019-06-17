@@ -24,9 +24,8 @@ def main():
 
     while True:
         mouse_x, mouse_y = 0, 0
-        mouse_clicked = False
+        mouse_clicked = arrows_pressed = False
         arrows = [False, False, False, False]  # D, W, A, S
-        arrows_pressed = False
 
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
@@ -58,17 +57,19 @@ def main():
                     commons.next_phase()
 
         keys = pygame.key.get_pressed()
+
+        direction = None
+
         if keys[pygame.K_RIGHT]:
             direction = 'right'
-            commons.move_camera(direction)
         if keys[pygame.K_UP]:
             direction = 'up'
-            commons.move_camera(direction)
         if keys[pygame.K_LEFT]:
             direction = 'left'
-            commons.move_camera(direction)
         if keys[pygame.K_DOWN]:
             direction = 'down'
+
+        if direction:
             commons.move_camera(direction)
 
         commons.go(mouse_x, mouse_y, mouse_clicked, arrows_pressed, arrows)

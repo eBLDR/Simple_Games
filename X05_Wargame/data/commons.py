@@ -56,7 +56,7 @@ class Game:
             if all_combats_solved():
                 self.phase = 'CHECK DEATH'
             else:
-                self.last_action = 'Still combats for solve'
+                self.last_action = 'Still combats for solving'
 
         elif self.phase == 'CHECK DEATH':
             while True:
@@ -73,8 +73,7 @@ class Game:
 # ------------------------------ CAMERA CLASS
 class Camera:
     def __init__(self):
-        self.X = INIT_CAMERA[0]
-        self.Y = INIT_CAMERA[1]
+        self.X, self.Y = INIT_CAMERA
 
     def update(self, direction):
         if direction == 'right':
@@ -124,15 +123,13 @@ def exit_game():
 
 # ------------------------------ SET GAME FUNCTIONS
 def set_bg_texture():
-    bg_list = ['grass00', 'snow00']  # 'sand00'
-    r = random.randint(0, len(bg_list) - 1)
-    return bg_list[r]
+    bg_list = ['grass00', 'snow00', 'sand00']
+    return random.choice(bg_list)
 
 
 def set_music():
     music_list = ['douce_dame_jolie_tocs_occitans']  # 'edge_of_the_world','pirates','the_high_seas'
-    r = random.randint(0, len(music_list) - 1)
-    return music_list[r]
+    return random.choice(music_list)
 
 
 # ------------------------------ MAIN FUNCTION
@@ -159,48 +156,45 @@ def run_game(mouse_x, mouse_y, mouse_clicked, arrow_pressed, arrows):
 
 # ------------------------------ CAMERA FUNCTIONS
 def move_camera(direction):
-    if direction == 'right':
-        val = camera.update(direction)
-        if val:
-            for p in game.PLAYERS:
-                for s in p.army:
-                    s.move_squad((s.pos[0][0] - CAMERA_JUMP), s.pos[0][1])
+    if direction == 'right' and camera.update(direction):
+        for p in game.PLAYERS:
+            for s in p.army:
+                s.move_squad((s.pos[0][0] - CAMERA_JUMP), s.pos[0][1])
 
-    elif direction == 'up':
-        val = camera.update(direction)
-        if val:
-            for p in game.PLAYERS:
-                for s in p.army:
-                    s.move_squad(s.pos[0][0], (s.pos[0][1] + CAMERA_JUMP))
+    elif direction == 'up' and camera.update(direction):
+        for p in game.PLAYERS:
+            for s in p.army:
+                s.move_squad(s.pos[0][0], (s.pos[0][1] + CAMERA_JUMP))
 
-    elif direction == 'left':
-        val = camera.update(direction)
-        if val:
-            for p in game.PLAYERS:
-                for s in p.army:
-                    s.move_squad((s.pos[0][0] + CAMERA_JUMP), s.pos[0][1])
+    elif direction == 'left' and camera.update(direction):
+        for p in game.PLAYERS:
+            for s in p.army:
+                s.move_squad((s.pos[0][0] + CAMERA_JUMP), s.pos[0][1])
 
-    elif direction == 'down':
-        val = camera.update(direction)
-        if val:
-            for p in game.PLAYERS:
-                for s in p.army:
-                    s.move_squad(s.pos[0][0], (s.pos[0][1] - CAMERA_JUMP))
+    elif direction == 'down' and camera.update(direction):
+        for p in game.PLAYERS:
+            for s in p.army:
+                s.move_squad(s.pos[0][0], (s.pos[0][1] - CAMERA_JUMP))
 
 
 # ------------------------------ BLIT FUNCTION
 def blit():
     screen.fill(BLACK)
+
     for e in range(0, map_W, bg.get_width()):
         for f in range(0, map_H, bg.get_height()):
             screen.blit(bg, (e - camera.X, f - camera.Y))
+
+    # Screen border
     pygame.draw.rect(screen, BLACK, (MARGIN - camera.X, MARGIN - camera.Y, map_W - (MARGIN * 2), map_H - (MARGIN * 2)), 3)
+
     display_player_phase_surf = display_player_phase.render('Ply %i: %s' % (game.current_player, game.phase), True, BLACK)
     display_player_phase_rect = display_player_phase_surf.get_rect(topleft=(MARGIN + 4, MARGIN + 4))
     display_gen_info_surf = display_gen_info.render('%s' % game.last_action, True, BLACK)
     display_gen_info_rect = display_gen_info_surf.get_rect(topleft=(MARGIN + 4, MARGIN + 30))
     screen.blit(display_player_phase_surf, display_player_phase_rect)
     screen.blit(display_gen_info_surf, display_gen_info_rect)
+
     for p in game.PLAYERS:
         for s in p.army:
             if s.units > 0:
@@ -218,14 +212,11 @@ def next_phase():
 def prepare_phase():
     for p in game.PLAYERS:
         for s in p.army:
-            s.mouse_over = False
-            s.is_selected = False
-            s.engaged = False
+            s.mouse_over = s.is_selected = s.engaged = False
+
     for s in game.PLAYERS[(game.current_player - 1)].army:
-        s.can_move = True
-        s.can_rotate = True
         s.can_range_attack = True if s.get_dR() != 0 else False
-        s.can_melee_attack = True
+        s.can_move = s.can_rotate = s.can_melee_attack = True
         check_collision(s)
 
     blit()
@@ -241,9 +232,8 @@ def movement_phase(mouse_x, mouse_y, mouse_clicked, arrow_pressed, arrows):
             for s in p.army:
                 if s.pos[1].collidepoint(mouse_x, mouse_y):  # show highlight
                     s.mouse_over = True
-                else:
-                    if s.mouse_over:  # clean highlights
-                        s.mouse_over = False
+                elif s.mouse_over:  # clean highlights
+                    s.mouse_over = False
 
     elif mouse_clicked:
         for s in game.PLAYERS[(game.current_player - 1)].army:
@@ -286,9 +276,8 @@ def dist_attack_phase(mouse_x, mouse_y, mouse_clicked):
             for s in p.army:
                 if s.pos[1].collidepoint(mouse_x, mouse_y):
                     s.mouse_over = True
-                else:
-                    if s.mouse_over:
-                        s.mouse_over = False
+                elif s.mouse_over:
+                    s.mouse_over = False
 
     elif mouse_clicked == 'LEFT':
         for s in game.PLAYERS[(game.current_player - 1)].army:
@@ -299,27 +288,25 @@ def dist_attack_phase(mouse_x, mouse_y, mouse_clicked):
             elif s.is_selected and s.can_range_attack:  # attack
                 for p2 in game.PLAYERS:
                     for s2 in p2.army:
-                        if s2.player != game.current_player:
-                            if s2.pos[1].collidepoint(mouse_x, mouse_y):
-                                shot_sound_effect(s)
-                                pygame.time.wait(1000)
-                                if is_in_range(s, s2):
-                                    if s.category != 'artillery':
-                                        kills = battle.calculate_distance_kills(s, s2)
+                        if s2.player != game.current_player and s2.pos[1].collidepoint(mouse_x, mouse_y):
+                            shot_sound_effect(s)
+                            pygame.time.wait(1000)
+                            if is_in_range(s, s2):
+                                if s.category != 'artillery':
+                                    kills = battle.calculate_distance_kills(s, s2)
+                                    hit_sound.play()
+                                else:
+                                    kills = battle.calculate_artillery_kills(s, s2)
+                                    if kills == 0:
+                                        game.last_action = ('%s(%i) bad shot' % (s.name, s.player))
+                                    else:
                                         hit_sound.play()
-                                    else:
-                                        kills = battle.calculate_artillery_kills(s, s2)
-                                        if kills == 0:
-                                            game.last_action = ('%s(%i) bad shot' % (s.name, s.player))
-                                        else:
-                                            hit_sound.play()
-                                    s2.units -= kills
-                                    if s2.units > 0:
-                                        s2.update_img()
-                                    else:
-                                        eliminate_squad(p2, s2)
-                                s.is_selected = False
-                                s.can_range_attack = False
+                                s2.units -= kills
+                                if s2.units > 0:
+                                    s2.update_img()
+                                else:
+                                    eliminate_squad(p2, s2)
+                            s.is_selected = s.can_range_attack = False
 
     elif mouse_clicked == 'RIGHT':
         for s in game.PLAYERS[(game.current_player - 1)].army:
@@ -332,9 +319,8 @@ def solve_melee_phase(mouse_x, mouse_y, mouse_clicked):
             for s in p.army:
                 if s.pos[1].collidepoint(mouse_x, mouse_y):
                     s.mouse_over = True
-                else:
-                    if s.mouse_over:
-                        s.mouse_over = False
+                elif s.mouse_over:
+                    s.mouse_over = False
 
     elif mouse_clicked == 'LEFT':
         for s in game.PLAYERS[(game.current_player - 1)].army:
@@ -498,15 +484,11 @@ def check_collision(squad):
         for s in p.army:
             if not squad.pos[0] == s.pos[0] and squad.pos[1].colliderect(s.pos[1]):  # if collision
                 if squad.player != s.player:  # if is enemy
-                    squad.engaged = True
-                    s.engaged = True
-                    squad.can_move = False
-                    squad.can_rotate = False
-                    squad.can_range_attack = False
+                    squad.engaged = s.engaged = True
+                    squad.can_move = squad.can_rotate = squad.can_range_attack = False
                     val = 1
                 else:
-                    squad.engaged = False  # if is ally
-                    s.engaged = False
+                    squad.engaged = s.engaged = False  # if is ally
                     val = 2
     return val
 

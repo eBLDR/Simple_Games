@@ -1,6 +1,6 @@
 import pygame
 
-from X05_Wargame.data import codex
+from data import codex
 
 
 class Squad:

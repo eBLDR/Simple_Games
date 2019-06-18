@@ -6,7 +6,7 @@ X-05 WARGAME
 """
 import pygame
 
-from X05_Wargame.data import commons
+from data import commons
 
 MOUSE_LEFT = 1  # by default
 MOUSE_RIGHT = 3  # by default

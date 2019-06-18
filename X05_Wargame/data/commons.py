@@ -3,8 +3,8 @@ import random
 import sys
 
 import pygame
-from X05_Wargame.data import squad
-from X05_Wargame.data import player, battle
+from data import squad
+from data import player, battle
 
 # ------------------------------ CONSTANTS
 map_W = 1536

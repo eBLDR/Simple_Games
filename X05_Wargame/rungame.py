@@ -1,40 +1,33 @@
 """
+ALERT: Old code, this game was made as a learning project.
+TODO: Main refactor pending
+
 X-05 WARGAME
-
-MAIN FILE
 """
-
-# ------------------------------ IMPORTS
-
 import pygame
-from pygame.locals import *
 
-pygame.init()
+from X05_Wargame.data import commons
 
-from data import commons
-
-# ------------------------------ CONTROL CONSTANTS
 MOUSE_LEFT = 1  # by default
 MOUSE_RIGHT = 3  # by default
 
 
-# ------------------------------ MAIN LOOP
 def main():
     commons.init_game()
 
     while True:
         mouse_x, mouse_y = 0, 0
-        mouse_clicked = arrows_pressed = False
-        arrows = [False, False, False, False]  # D, W, A, S
+        mouse_clicked = False
+        arrow_pressed = None  # D, W, A, S
 
         for event in pygame.event.get():
-            if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
+            if event.type == pygame.QUIT or (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE):
                 commons.exit_game()
 
-            elif event.type == MOUSEMOTION:
+            elif event.type == pygame.MOUSEMOTION:
                 mouse_x, mouse_y = event.pos
 
-            elif event.type == MOUSEBUTTONUP:
+            elif event.type == pygame.MOUSEBUTTONUP:
                 mouse_x, mouse_y = event.pos
 
                 if event.button == MOUSE_LEFT:
@@ -43,17 +36,17 @@ def main():
                 elif event.button == MOUSE_RIGHT:
                     mouse_clicked = 'RIGHT'
 
-            elif event.type == KEYUP:
-                if event.key == K_d:
-                    arrows_pressed, arrows[0] = True, True
-                elif event.key == K_w:
-                    arrows_pressed, arrows[1] = True, True
-                elif event.key == K_a:
-                    arrows_pressed, arrows[2] = True, True
-                elif event.key == K_s:
-                    arrows_pressed, arrows[3] = True, True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_d:
+                    arrow_pressed = 'D'
+                elif event.key == pygame.K_w:
+                    arrow_pressed = 'W'
+                elif event.key == pygame.K_a:
+                    arrow_pressed = 'A'
+                elif event.key == pygame.K_s:
+                    arrow_pressed = 'S'
 
-                elif event.key == K_SPACE:
+                elif event.key == pygame.K_SPACE:
                     commons.next_phase()
 
         keys = pygame.key.get_pressed()
@@ -72,9 +65,10 @@ def main():
         if direction:
             commons.move_camera(direction)
 
-        commons.go(mouse_x, mouse_y, mouse_clicked, arrows_pressed, arrows)
+        commons.run_game(mouse_x, mouse_y, mouse_clicked, arrow_pressed)
 
 
 # ------------------------------ EXECUTE
 if __name__ == '__main__':
+    pygame.init()
     main()

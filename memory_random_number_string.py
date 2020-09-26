@@ -2,34 +2,22 @@ import random
 import time
 import turtle
 
+# Set up
+START_LEVEL = 5
+DELTA_INCREASE = 1
+DELTA_DECREASE = 2
+DELAY_TIME = 1  # In seconds
 
-class Manager:
-    def __init__(self, level=5, delay_time=1):
-        self.gui = GUI(manager=self)
 
-        self.delay_time = delay_time  # In seconds
-        self.level = level
-        self.number_sequence = []
+def generate_number_sequence(items):
+    number_sequence = []
 
-    def play_round(self):
-        self.generate_number_sequence()
-        self.gui.process_round()
+    for i in range(items):
+        number_sequence.append(
+            str(random.randint(0, 9)),
+        )
 
-    def generate_number_sequence(self):
-        self.number_sequence = []
-
-        for i in range(self.level):
-            self.number_sequence.append(
-                str(random.randint(0, 9)),
-            )
-
-    def increase_level(self):
-        self.level += 1
-        self.play_round()
-
-    def decrease_level(self):
-        self.level -= 1
-        self.play_round()
+    return number_sequence
 
 
 class Button(turtle.Turtle):
@@ -57,7 +45,10 @@ class Button(turtle.Turtle):
         self.showturtle()
 
 
-class GUI:
+class Manager:
+    flick_time = 0.1  # Blank time between numbers
+    effective_delay_time = DELAY_TIME - flick_time
+
     font_style = ('Console', 108, 'bold')
     font_style_2 = ('Console', 36, 'normal')
     number_position = (0, -100)
@@ -67,9 +58,8 @@ class GUI:
     button_success = Button(text='Success', position=(-100, -100), color='darkgreen')
     button_fail = Button(text='Fail', position=(100, -100), color='darkred')
 
-    def __init__(self, manager):
-        self.manager = manager
-
+    def __init__(self):
+        # Graphics
         self.screen = turtle.Screen()
         self.screen.title('Random number string')
         self.screen.setup(600, 600)
@@ -86,23 +76,30 @@ class GUI:
             self.button_fail,
         ]
 
+        # Game logic
+        self.level = START_LEVEL
+        self.number_sequence = generate_number_sequence(self.level)
+
     def _clear_screen(self):
         for cursor in self._all_cursors:
             cursor.clear()
             cursor.hideturtle()
 
-    def process_round(self):
-        self.render_ready_screen(self.manager.level)
+    def play_round(self):
+        self.number_sequence = generate_number_sequence(self.level)
 
-        for number in self.manager.number_sequence:
+        self.render_ready_screen(self.level)
+        self.cursor.goto(self.number_position)
+
+        for number in self.number_sequence:
             self.display_number(number)
-            time.sleep(self.manager.delay_time)
+            time.sleep(self.effective_delay_time)
 
         self.render_recall_screen()
 
     def display_number(self, number):
         self._clear_screen()
-        self.cursor.goto(self.number_position)
+        time.sleep(self.flick_time)
         self.cursor.write(number, font=self.font_style, align='center')
 
     def render_ready_screen(self, level):
@@ -131,17 +128,19 @@ class GUI:
 
     def display_numbers(self):
         # TODO: adjust size and position based on the amount of numbers
-        numbers = ', '.join(self.manager.number_sequence)
+        numbers = ', '.join(self.number_sequence)
         self.cursor.write(numbers, font=self.font_style_2, align='center')
 
     def round_success(self, *args):
-        self.manager.increase_level()
+        self.level += DELTA_INCREASE
+        self.play_round()
 
     def round_fail(self, *args):
-        self.manager.decrease_level()
+        self.level -= DELTA_DECREASE
+        self.play_round()
 
 
 if __name__ == '__main__':
-    manager_ = Manager(level=2)
-    manager_.play_round()
+    manager = Manager()
+    manager.play_round()
     turtle.done()

@@ -1,105 +1,23 @@
-import datetime
 import json
 import os
 import random
 import time
 import turtle
 
-# Set up
-START_LEVEL = 5
-DELTA_INCREASE = 1
-DELTA_DECREASE = 2
-DELAY_TIME = 1  # In seconds
-
-
-class History:
-    def __init__(self):
-        self.start_time = datetime.datetime.now()
-        self.end_time = None
-
-        self.total_rounds = 0
-        self.max_success_level = 0
-        self.levels = {}
-
-        self.report = None
-
-    def add_result(self, level, outcome):
-        if level not in self.levels:
-            self.levels[level] = {
-                'success': 0,
-                'fail': 0,
-                'total': 0,
-            }
-
-        self.levels[level][outcome] += 1
-        self.levels[level]['total'] += 1
-        self.total_rounds += 1
-
-        if level > self.max_success_level:
-            self.max_success_level = level
-
-    def calculate_percentages(self):
-        for level_stats in self.levels.values():
-            level_stats['success_rate'] = round(
-                (level_stats['success'] * 100) / level_stats['total'],
-                2,
-            )
-
-    def generate_report(self):
-        self.end_time = datetime.datetime.now()
-        self.calculate_percentages()
-
-        self.report = {
-            'time': {
-                'start': str(self.start_time),
-                'end': str(self.end_time),
-                'duration': str(self.end_time - self.start_time),
-            },
-            'total_rounds': self.total_rounds,
-            'max_success_level': self.max_success_level,
-            'levels': self.levels,
-        }
+from data import config
+from data.button import Button
+from data.history import History
 
 
 def generate_number_sequence(items):
-    number_sequence = []
-
-    for i in range(items):
-        number_sequence.append(
-            str(random.randint(0, 9)),
-        )
-
-    return number_sequence
-
-
-class Button(turtle.Turtle):
-    font_style = ('Console', 24, 'normal')
-
-    def __init__(self, text, position, color):
-        super().__init__()
-        self.hideturtle()
-        self.speed(0)
-        self.penup()
-        self.shape('square')
-        self.shapesize(4, 3)
-
-        self.position = position
-        self.text = text
-        self.color(color, color)
-
-        self.goto(position)
-        self.seth(90)
-
-    def render(self):
-        self.forward(30)
-        self.write(self.text, font=self.font_style, align='center')
-        self.backward(30)
-        self.showturtle()
+    return [
+        str(random.randint(0, 9)) for _ in range(items)
+    ]
 
 
 class Manager:
     flick_time = 0.1  # Blank time between numbers
-    effective_delay_time = DELAY_TIME - flick_time
+    effective_delay_time = config.DELAY_TIME - flick_time
 
     font_style = ('Console', 108, 'bold')
     font_style_2 = ('Console', 36, 'normal')
@@ -116,8 +34,22 @@ class Manager:
     reports_path = os.path.join(os.getcwd(), 'reports')
     filename_format = '%Y%m%d-%H%M%S'
 
-    def __init__(self):
+    def __init__(self, start_level=None):
         # Graphics
+        self._init_done = False
+        self.screen = None
+        self.cursor = None
+
+        self._all_cursors = []
+
+        # Game logic
+        self.level = start_level or config.DEFAULT_START_LEVEL
+        self.number_sequence = None
+
+        # History
+        self.history = History()
+
+    def _init(self):
         self.screen = turtle.Screen()
         self.screen.title('Random number string')
         self.screen.setup(600, 600)
@@ -136,12 +68,13 @@ class Manager:
             self.button_fail,
         ]
 
-        # Game logic
-        self.level = START_LEVEL
-        self.number_sequence = generate_number_sequence(self.level)
+        for button in self._all_cursors:
+            if button == self.cursor:
+                continue
 
-        # History
-        self.history = History()
+            button._init()
+
+        self._init_done = True
 
     def _clear_screen(self):
         for cursor in self._all_cursors:
@@ -149,6 +82,9 @@ class Manager:
             cursor.hideturtle()
 
     def play_round(self):
+        if not self._init_done:
+            self._init()
+
         self.number_sequence = generate_number_sequence(self.level)
 
         self.render_ready_screen(self.level)
@@ -213,12 +149,12 @@ class Manager:
 
     def round_success(self, *args):
         self.history.add_result(self.level, 'success')
-        self.level += DELTA_INCREASE
+        self.level += config.DELTA_INCREASE
         self.play_round()
 
     def round_fail(self, *args):
         self.history.add_result(self.level, 'fail')
-        self.level -= DELTA_DECREASE
+        self.level -= config.DELTA_DECREASE
         self.play_round()
 
     def close(self, *args):
@@ -232,10 +168,3 @@ class Manager:
 
         with open(file_path, 'w') as json_file:
             json.dump(self.history.report, json_file)
-
-
-if __name__ == '__main__':
-    manager = Manager()
-    manager.play_round()
-    manager.screen.listen()
-    manager.screen.mainloop()

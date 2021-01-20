@@ -1,6 +1,6 @@
 import argparse
 
-from data.manager import Manager
+from memory_random_digit_string.manager import Manager
 
 
 def main():

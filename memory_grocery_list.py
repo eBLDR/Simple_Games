@@ -2,7 +2,7 @@ import os
 import random
 import time
 
-# TODO: finis flash feature
+# TODO: finish flash feature
 # TODO: feature distractions
 # TODO: improve exit() when level higher than len(ITEMS)
 

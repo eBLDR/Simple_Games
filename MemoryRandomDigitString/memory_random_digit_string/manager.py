@@ -4,9 +4,9 @@ import random
 import time
 import turtle
 
-from data import config
-from data.button import Button
-from data.history import History
+from memory_random_digit_string import config
+from memory_random_digit_string.button import Button
+from memory_random_digit_string.history import History
 
 
 def generate_number_sequence(items):
